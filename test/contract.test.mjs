@@ -63,6 +63,10 @@ test('lines are feeding/ begging lines used by the client', async () => {
     assert.ok(Array.isArray(lines[key]) && lines[key].length > 0, key);
   }
   assert.equal(typeof lines.onboard, 'string');
+  assert.ok(lines.beg.includes('鲸鲸...饿饿...QwQ'));
+  assert.ok(!lines.beg.includes('碗都舔得亮晶晶啦…'));
+  assert.ok(!lines.beg.includes('一口…就一口嘛，好不好呀？'));
+  assert.ok(!lines.starve.includes('饿坏啦…饭饭快来…'));
   const client = await read('assets/client.js');
   assert.ok(client.includes('rt.lines.feed') && client.includes('rt.lines.beg'));
 });

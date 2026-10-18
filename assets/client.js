@@ -69,14 +69,13 @@
   var DEFAULT_LINES = {
     beg: [
       '饭饭…饭饭没有啦…',
-      '呜呜…肚子咕噜咕噜叫…',
+      '（｡•́︿•̀｡）肚子咕噜咕噜叫…',
       '大肥鱼饿饿，给我装饭饭嘛～',
       '咕噜咕噜…碗底光光的啦…',
-      '一口…就一口嘛，好不好呀？',
+      '鲸鲸...饿饿...QwQ',
       '哎呀呀…饭没了哟…',
       '饿饿…给我添点饭饭啦～',
       '呜呜呜…要饭饭…',
-      '碗都舔得亮晶晶啦…',
       '好饿好饿…咕咕叫啦…',
       '饭饭香香…给我留一口嘛～',
       '说话都没力气啦…来点饭饭嘛…'
@@ -88,8 +87,7 @@
       '饿得软趴趴…快给点饭饭嘛…',
       '咕…咕…肚子叫得没力气啦…',
       '再不给饭…要变成鱼干啦…',
-      '饿坏啦…饭饭快来…',
-      '有气无力…就等一口饭饭…'
+      '（´-ω-｀）…就等一口饭饭…'
     ],
     feed: ['装饭啦～', '好耶，有饭吃了。', '这碗先囤着，慢慢吃。', '闻起来好香。'],
     onboard: '点碗装饭：一碗 = 100 万 token；每轮吃完会报账，没饭了它会自己讨饭。'
@@ -1289,7 +1287,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.5</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.6</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);
