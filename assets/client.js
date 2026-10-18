@@ -71,19 +71,19 @@
       '饭饭…饭饭没有啦…',
       '（｡•́︿•̀｡）肚子咕噜咕噜叫…',
       '大肥鱼饿饿，给我装饭饭嘛～',
-      '咕噜咕噜…碗底光光的啦…',
+      '(´；ω；｀) 咕噜咕噜…碗底光光的啦…',
       '鲸鲸...饿饿...QwQ',
       '哎呀呀…饭没了哟…',
       '饿饿…给我添点饭饭啦～',
-      '呜呜呜…要饭饭…',
+      '(ㄒoㄒ) 呜呜…要饭饭…',
       '好饿好饿…咕咕叫啦…',
-      '饭饭香香…给我留一口嘛～',
+      '(๑•́ ₃ •̀๑) 饭饭香香…留一口嘛～',
       '说话都没力气啦…来点饭饭嘛…'
     ],
     starve: [
       '唔…已经饿到不想动啦…',
       '大肥鱼饿坏了…扁扁的啦…',
-      '呜呜…眼前冒星星啦…',
+      '(@_@) 眼前冒星星啦…',
       '饿得软趴趴…快给点饭饭嘛…',
       '咕…咕…肚子叫得没力气啦…',
       '再不给饭…要变成鱼干啦…',
@@ -1287,7 +1287,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.6</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.7</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);
