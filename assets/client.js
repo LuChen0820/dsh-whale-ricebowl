@@ -209,6 +209,7 @@
     starveTimer: null,
     starveLoop: null,
     lastStarve: '',
+    starveDrops: [],
     bubbleTimer: null,
     riceTimer: null,
     pourTimer: null,
@@ -912,6 +913,36 @@
     if (rt.layer) rt.layer.classList.remove('dshwr-beg', 'dshwr-starving');
     var img = hungerImg();
     if (img) img.classList.remove('dshwr-beg-img', 'dshwr-starve-img');
+    removeStarveDrops();
+    if (rt.mounted && !rt.eatBusy && !rt.eatQueue.length) setLabel(liveRemain());
+  }
+
+  function removeStarveDrops() {
+    if (!rt.starveDrops || !rt.starveDrops.length) return;
+    for (var i = 0; i < rt.starveDrops.length; i++) {
+      var el = rt.starveDrops[i];
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    }
+    rt.starveDrops = [];
+  }
+
+  /** 饿坏了：在眼睛下面挂两滴小眼泪 */
+  function spawnStarveDrops() {
+    if (!rt.layer || !rt.els || !rt.mounted) return;
+    removeStarveDrops();
+    layoutMouth();
+    if (!rt.mouth) return;
+    for (var i = 0; i < 2; i++) {
+      var el = document.createElement('span');
+      el.className = 'dshwr-starve-drop';
+      var dx = (i === 0 ? -0.78 : 0.78) * rt.mouth.w;
+      var dy = -rt.mouth.h * (i === 0 ? 0.9 : 0.75);
+      el.style.left = (rt.mouth.x + dx).toFixed(1) + 'px';
+      el.style.top = (rt.mouth.y + dy).toFixed(1) + 'px';
+      el.style.animationDelay = (i * 1.15).toFixed(2) + 's';
+      rt.layer.appendChild(el);
+      rt.starveDrops.push(el);
+    }
   }
 
   function hungerImg() {
@@ -978,7 +1009,12 @@
     rt.begDone = true;
     if (rt.layer) rt.layer.classList.add('dshwr-starving');
     var img = hungerImg();
-    if (img) img.classList.add('dshwr-starve-img');
+    if (img) {
+      img.classList.remove('dshwr-beg-img');
+      img.classList.add('dshwr-starve-img');
+    }
+    spawnStarveDrops();
+    setLabel(0);
     starvePulse();
     if (rt.starveLoop) clearInterval(rt.starveLoop);
     rt.starveLoop = setInterval(starvePulse, Math.max(8000, Number(rt.config.starveIntervalMs) || 30000));
@@ -1195,7 +1231,7 @@
   function setLabel(remain) {
     if (!rt.els || !rt.els.label) return;
     var text = '';
-    if (rt.settings.label !== false) text = remain > 0 ? bowlText(remain) : '没饭了';
+    if (rt.settings.label !== false) text = remain > 0 ? bowlText(remain) : (rt.starving ? '饿坏了…' : '没饭了');
     rt.els.label.textContent = text;
     var box = rt.els.label.parentNode;
     if (box) box.hidden = !text;
@@ -1284,7 +1320,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.3</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.4</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);

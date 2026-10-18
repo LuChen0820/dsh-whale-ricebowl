@@ -53,8 +53,8 @@ Desktop (Electron): the host HTML is served statically, so this plugin also regi
 1. **Load rice**: click the bowl → load a small bowl (250K tokens) / half bowl (500K) / one bowl (1M). You can also load before a conversation — it is parked as "pending rice" and poured into the next conversation's pot when its first turn starts.
 2. **Each turn**: after `turn/start`, real usage makes the whale eat; the rice level drops.
 3. **Turn end**: a bubble reports e.g. "ate 5.4K · 3 bowls left". Short turns are replayed so at least one bite is always shown before the report.
-4. **Bowls**: 1 bowl = 1,000,000 tokens; main bowl + 4 slots = 5 visible bowls max (slots sit to the **left** of the main bowl and hide while the feed menu is open). More than 5 bowls keeps counting but the UI stays the same.
-5. **Begging → starving**: at zero the whale begs 10 times (bobs / tilts, opens its mouth, random bubbles, never the same twice in a row). After that it waits quietly for 10 minutes and then becomes "starving" — desaturated, droopy sway, weak bubbles. Feed it any time and it recovers instantly.
+4. **Bowls**: 1 bowl = 1,000,000 tokens; main bowl + 4 slots = 5 visible bowls max (slots sit on the **same table line** as the main bowl, to its **left**, and hide while the feed menu is open). More than 5 bowls keeps counting but the UI stays the same.
+5. **Begging → starving**: at zero the whale begs 10 times (bobs / tilts, opens its mouth, random bubbles, never the same twice in a row). After that it waits quietly for 10 minutes and then becomes "starving" — desaturated, droopy sway, two little tears, a "starving…" label and weak bubbles. Feed it any time and it recovers instantly.
 6. **Settings**: right-click the bowl → toggles (begging / eating animation / sound / rice particles / number label), per-conversation ledger (loaded / eaten / remaining), and "clear ledger".
 7. **Refresh**: the ledger lives in localStorage; assets are served `no-store`.
 

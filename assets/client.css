@@ -711,7 +711,7 @@
   position: absolute;
   left: auto;
   right: 101%;
-  bottom: 40%;
+  bottom: 4%;
   transform: none;
   display: flex;
   flex-direction: row;
@@ -804,20 +804,41 @@
 }
 
 
-/* ---------- v0.5.3：饿坏了 ---------- */
+/* ---------- v0.5.3 / v0.5.4：饿坏了（更惨一点） ---------- */
 .dshwr-starve-img {
-  filter: saturate(0.5) brightness(0.96);
-  animation: dshwr-starve-sway 4.6s ease-in-out infinite;
+  filter: saturate(0.26) brightness(0.9) contrast(0.98);
+  animation: dshwr-starve-sway 5.4s ease-in-out infinite;
   transform-origin: 50% 100%;
 }
 @keyframes dshwr-starve-sway {
   0%, 100% { transform: translateY(0) rotate(0); }
-  30% { transform: translateY(1%) rotate(-1.1deg); }
-  70% { transform: translateY(1.4%) rotate(1deg); }
+  32% { transform: translateY(2.1%) rotate(-1.9deg); }
+  68% { transform: translateY(2.6%) rotate(1.7deg); }
+}
+.dshwr-starve-drop {
+  position: absolute;
+  z-index: 9;
+  width: 0.5em;
+  height: 0.7em;
+  border-radius: 0 62% 62% 62%;
+  background: linear-gradient(160deg, #eaf8ff, #8ac9f8 65%, #5fa9ee);
+  box-shadow: 0 0 0.14em rgba(255, 255, 255, 0.95), 0 0.05em 0.14em rgba(40, 90, 160, 0.4);
+  opacity: 0.92;
+  pointer-events: none;
+  animation: dshwr-starve-drop 2.4s ease-in infinite;
+}
+@keyframes dshwr-starve-drop {
+  0% { opacity: 0.92; transform: translateY(0) scale(0.9); }
+  65% { opacity: 0.8; transform: translateY(0.62em) scale(1); }
+  100% { opacity: 0; transform: translateY(1.15em) scale(1); }
 }
 .dshwr-starving .dshwr-bowl-svg {
-  opacity: 0.6;
-  filter: saturate(0.55);
+  opacity: 0.5;
+  filter: saturate(0.4);
+  animation-duration: 5.5s;
+}
+.dshwr-starving .dshwr-label {
+  background: rgba(96, 62, 24, 0.85);
 }
 @media (prefers-reduced-motion: reduce) {
   .dshwr-starve-img { animation: none; }

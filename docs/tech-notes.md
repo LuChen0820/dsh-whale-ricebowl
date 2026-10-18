@@ -58,7 +58,7 @@ v0.5.0 的做法：
 
 * 触发：`updateBegging()` 在有饭量 / 正在吃饭 / 回合进行中时停掉；否则（`settings.begging` 开启且剩余 ≤ 0）先等 `begDelayMs`（9s），之后每 `begIntervalMs`（7s）来一次 `begPulse()`。
 * **前 10 次**（`begTimes`）：每次气泡显示 `begShowMs` 并自动消失；同时给宿主 `img` 临时加 `.dshwr-beg-img`（上浮 / 歪头 1.7s）、层上加 `.dshwr-beg`（碗发光 1.5s）、嘴张开「啊——」0.9s。文案从 `lines.beg` 随机取，且不连续重复（`rt.lastBeg`）。
-* 10 次之后：停止气泡，安静等待 `starveDelayMs`（默认 10 分钟），然后 `enterStarving()`：层上加 `.dshwr-starving`、`img` 加 `.dshwr-starve-img`（灰一点 + 慢悠悠耷拉晃动）、气泡换成 `lines.starve` 池、间隔 `starveIntervalMs`（默认 30s）。
+* 10 次之后：停止气泡，安静等待 `starveDelayMs`（默认 10 分钟），然后 `enterStarving()`：层上加 `.dshwr-starving`、`img` 加 `.dshwr-starve-img`（变灰 + 慢悠悠耷拉晃动）、眼睛下面挂两滴小眼泪（`.dshwr-starve-drop`，由 `spawnStarveDrops()` 按嘴部坐标生成）、标签变成「饿坏了…」、气泡换成 `lines.starve` 池、间隔 `starveIntervalMs`（默认 30s）。
 * 加饭 / 重新有饭后 `stopBegging()` 立刻清掉所有定时器、计数和临时类，恢复正常。
 * 没饭时**不再播吃饭动作**：`enqueueEat()` 先看视觉剩余，剩余 ≤ 0 就直接跳过演出（本轮消耗照常记账、报账仍显示「吃完啦」）。
 
