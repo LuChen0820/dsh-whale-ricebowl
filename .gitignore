@@ -1,0 +1,11 @@
+node_modules/
+demo/.local/
+_tmp/
+_tmp_*/
+*.tgz
+*.log
+.DS_Store
+shot-*.png
+crop-*.png
+dsh-e2e*.png
+demo.pid

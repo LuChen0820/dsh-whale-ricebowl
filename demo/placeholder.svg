@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <!-- 白饭预言家 · 本地预览用占位角色（不是上游立绘，也不含上游素材）
+       脸部构图对齐上游默认立绘：眼睛 ~60-71% 高，嘴位 ~48.5% / 75%（由插件叠加）。 -->
+  <defs>
+    <radialGradient id="hair" cx="42%" cy="26%" r="80%">
+      <stop offset="0" stop-color="#6d88c6"/>
+      <stop offset="0.55" stop-color="#41598f"/>
+      <stop offset="1" stop-color="#2c3e6e"/>
+    </radialGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff6f1"/>
+      <stop offset="1" stop-color="#fbe9e1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 后发 -->
+  <ellipse cx="200" cy="245" rx="182" ry="196" fill="url(#hair)"/>
+  <!-- 两侧小鳍 -->
+  <path d="M40,258 C14,240 2,282 34,308 Z" fill="#334678"/>
+  <path d="M360,258 C386,240 398,282 366,308 Z" fill="#334678"/>
+
+  <!-- 脸 -->
+  <ellipse cx="202" cy="258" rx="148" ry="146" fill="url(#skin)"/>
+  <!-- 刘海 -->
+  <path d="M46,258 C36,132 112,62 202,62 C292,62 366,132 358,258
+           C338,196 306,172 278,182 C284,208 266,230 240,238
+           C236,206 222,190 202,190 C182,190 168,206 164,238
+           C138,230 120,208 126,182 C98,172 66,196 46,258 Z" fill="url(#hair)"/>
+  <!-- 呆毛 -->
+  <path d="M206,64 C210,26 248,14 264,32" stroke="#3b5590" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <!-- 女仆发带 -->
+  <path d="M72,166 C96,100 150,74 202,74 C254,74 308,100 332,166
+           C302,128 254,112 202,112 C150,112 102,128 72,166 Z" fill="#ffffff" opacity="0.96"/>
+  <path d="M96,146 C128,120 168,110 202,110 C236,110 276,120 308,146" fill="none" stroke="#e6ebf7" stroke-width="5" stroke-linecap="round"/>
+  <!-- 发丝高光 -->
+  <path d="M132,116 C120,150 118,178 124,208" stroke="#7e98d2" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.55"/>
+  <path d="M276,118 C288,150 292,180 286,210" stroke="#7e98d2" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.45"/>
+  <path d="M180,96 C176,126 176,150 182,176" stroke="#7e98d2" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- 眼睛 -->
+  <g>
+    <ellipse cx="148" cy="242" rx="40" ry="45" fill="#1f2c55"/>
+    <ellipse cx="148" cy="246" rx="29" ry="34" fill="#95b8e8"/>
+    <circle cx="136" cy="228" r="12" fill="#ffffff"/>
+    <circle cx="160" cy="264" r="6" fill="#ffffff" opacity="0.92"/>
+    <path d="M108,214 C120,200 140,196 158,204" stroke="#1f2c55" stroke-width="9" fill="none" stroke-linecap="round"/>
+  </g>
+  <g>
+    <ellipse cx="258" cy="242" rx="40" ry="45" fill="#1f2c55"/>
+    <ellipse cx="258" cy="246" rx="29" ry="34" fill="#95b8e8"/>
+    <circle cx="246" cy="228" r="12" fill="#ffffff"/>
+    <circle cx="270" cy="264" r="6" fill="#ffffff" opacity="0.92"/>
+    <path d="M218,204 C236,196 256,200 268,214" stroke="#1f2c55" stroke-width="9" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- 腮红 -->
+  <ellipse cx="96" cy="296" rx="19" ry="10" fill="#f5c3c6" opacity="0.75"/>
+  <ellipse cx="308" cy="296" rx="19" ry="10" fill="#f5c3c6" opacity="0.75"/>
+
+  <!-- 小嘴（吃饭时会被插件叠加的嘴盖住） -->
+  <path d="M180,296 Q194,304 208,296" stroke="#bd8484" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+
+  <!-- 领口 + 蝴蝶结（把底部收住，嘴位 77.5% 留给吃饭动作） -->
+  <path d="M118,400 C132,362 164,344 202,344 C240,344 272,362 286,400 Z" fill="#f4f7ff"/>
+  <path d="M202,376 L150,350 L146,398 Z" fill="#2b3768"/>
+  <path d="M202,376 L254,350 L258,398 Z" fill="#2b3768"/>
+  <rect x="192" y="368" width="20" height="20" rx="5" fill="#7fc9e8" stroke="#ffffff" stroke-width="3" transform="rotate(45 202 378)"/>
+</svg>

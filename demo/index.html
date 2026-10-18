@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>白饭预言家 · demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: radial-gradient(1200px 700px at 70% 20%, #f7f9ff 0%, #e9eef9 55%, #dfe6f5 100%); }
+  .dshwv-root { position: fixed; right: 0; bottom: 0; width: 380px; height: 380px; z-index: 5; }
+  .dshwv-img { position: absolute; right: 0; bottom: 0; width: 59.45%; height: 59.45%; display: block; object-fit: contain; object-position: right bottom; -webkit-user-drag: none; }
+  .panel { position: fixed; left: 18px; top: 16px; width: 300px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.82); border: 1px solid rgba(140,165,225,0.4); box-shadow: 0 12px 30px rgba(30,50,100,0.12); font: 13px/1.6 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: #27355c; }
+  .panel h1 { margin: 0 0 4px; font-size: 15px; letter-spacing: 0.02em; }
+  .panel p { margin: 0 0 10px; color: #5b6a92; font-size: 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  button { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(110,140,210,0.45); background: #fff; color: #27407c; cursor: pointer; }
+  button:hover { background: #eef3ff; }
+  button.primary { background: #2f56b8; border-color: #2f56b8; color: #fff; }
+  button.primary:hover { background: #3c66cf; }
+  .hint { margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(120,145,210,0.35); color: #6a77a0; font-size: 11px; }
+  kbd { background: #eef2fb; border-radius: 4px; padding: 0 4px; }
+</style>
+<script>
+  // 只在本机 demo 里给「demo-session」预置 3 碗饭；真实插件不预置。
+  try {
+    var KEY = 'dshwr-tank:v1';
+    if (!localStorage.getItem(KEY)) {
+      localStorage.setItem(KEY, JSON.stringify({
+        v: 1, order: ['demo-session'],
+        sessions: { 'demo-session': { id: 'demo-session', allocated: 3000000, consumed: 0, fedAt: 0, updatedAt: 0, turns: 0 } }
+      }));
+    }
+    localStorage.setItem('dshwr-settings', JSON.stringify({ begging: true, particles: true, label: true, eat: true, sound: false }));
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="/dsh-whale-rice/client.css">
+</head>
+<body>
+<div class="panel">
+  <h1>白饭预言家 · 本地预览</h1>
+  <p>模拟宿主「小鲸鱼记账挂件」的 DOM；点右下角饭碗就能装饭。</p>
+  <div class="row">
+    <button data-feed="1">装 1 碗（100 万）</button>
+    <button data-feed="2">装 2 碗（200 万）</button>
+    <button data-feed="5">装 5 碗（500 万）</button>
+  </div>
+  <div class="row">
+    <button class="primary" id="btn-turn">开始一轮（turn/start）</button>
+    <button id="btn-eat">吃 2.6K</button>
+    <button id="btn-eat2">吃 5.4K</button>
+    <button id="btn-end">结束本轮（turn/end）</button>
+  </div>
+  <div class="row">
+    <button id="btn-run">一键跑完一轮</button>
+    <button id="btn-empty">空碗讨饭演示</button>
+    <button id="btn-clear">清空饭账</button>
+  </div>
+  <div class="hint">演示数据只写 localStorage（键 <kbd>dshwr-tank:v1</kbd>）；换档位/清空会刷新页面。真实使用时叠加在 DSH 页面右下角的鲸鱼挂件旁。</div>
+</div>
+<div class="dshwv-root"><img class="dshwv-img" src="/demo/whale.png" alt=""></div>
+<script src="/dsh-whale-rice/client.js"></script>
+<script>
+(function () {
+  var KEY = 'dshwr-tank:v1';
+  var state = { turn: 1 };
+  function tank() {
+    try {
+      var t = JSON.parse(localStorage.getItem(KEY) || '{}');
+      if (!t.sessions) t = { v: 1, order: [], sessions: {} };
+      if (!t.sessions['demo-session']) t.sessions['demo-session'] = { id: 'demo-session', allocated: 0, consumed: 0, fedAt: 0, updatedAt: 0, turns: 0 };
+      if (t.order.indexOf('demo-session') === -1) t.order = ['demo-session'];
+      return t;
+    } catch (e) {
+      return { v: 1, order: ['demo-session'], sessions: { 'demo-session': { id: 'demo-session', allocated: 0, consumed: 0, fedAt: 0, updatedAt: 0, turns: 0 } } };
+    }
+  }
+  function save(t) { localStorage.setItem(KEY, JSON.stringify(t)); }
+  function mock(params) { return fetch('/mock/set?' + new URLSearchParams(params)).then(function (r) { return r.json(); }); }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  document.querySelectorAll('[data-feed]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var t = tank();
+      var n = Number(btn.getAttribute('data-feed')) || 1;
+      var row = t.sessions['demo-session'];
+      row.allocated += n * 1000000;
+      row.fedAt = Date.now();
+      save(t);
+      location.reload();
+    });
+  });
+  document.getElementById('btn-turn').addEventListener('click', function () {
+    state.turn += 1;
+    mock({ turn: state.turn, running: 1, actual: 0 });
+  });
+  document.getElementById('btn-eat').addEventListener('click', function () {
+    mock({ turn: state.turn, running: 1, actual: 2600 });
+  });
+  document.getElementById('btn-eat2').addEventListener('click', function () {
+    mock({ turn: state.turn, running: 1, actual: 5400 });
+  });
+  document.getElementById('btn-end').addEventListener('click', function () {
+    mock({ turn: state.turn, running: 0, actual: 5400 });
+  });
+  document.getElementById('btn-run').addEventListener('click', async function () {
+    state.turn += 1;
+    await mock({ turn: state.turn, running: 1, actual: 0 });
+    await wait(1400);
+    await mock({ turn: state.turn, running: 1, actual: 2600 });
+    await wait(1300);
+    await mock({ turn: state.turn, running: 1, actual: 5400 });
+    await wait(1000);
+    await mock({ turn: state.turn, running: 0, actual: 5400 });
+  });
+  document.getElementById('btn-empty').addEventListener('click', function () {
+    var t = tank();
+    var row = t.sessions['demo-session'];
+    row.allocated = 9000;
+    row.consumed = 5400;
+    save(t);
+    location.reload();
+  });
+  document.getElementById('btn-clear').addEventListener('click', function () {
+    localStorage.removeItem(KEY);
+    location.reload();
+  });
+})();
+</script>
+</body>
+</html>

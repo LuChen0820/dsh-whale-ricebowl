@@ -1,0 +1,65 @@
+{
+  "name": "dsh-whale-ricebowl",
+  "version": "0.5.0",
+  "description": "DSH 小鲸鱼记账挂件附加层：先给大肥鱼装饭（1 碗 = 100 万 token），每轮对话按真实 token 消耗吃掉米饭，吃完自动讨饭；每个对话一口锅。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib",
+    "assets",
+    "cordis.patch.yml",
+    "README.md",
+    "README-En.md",
+    "LICENSE",
+    "NOTICE.md",
+    "docs",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "whale",
+    "widget",
+    "rice",
+    "feeding",
+    "token",
+    "desktop-pet"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "dsh-whale-widget": "^0.4.2"
+  },
+  "peerDependenciesMeta": {
+    "dsh-whale-widget": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node demo/server.mjs",
+    "pack": "npm pack --dry-run"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuChen0820/dsh-whale-ricebowl.git"
+  },
+  "homepage": "https://github.com/LuChen0820/dsh-whale-ricebowl#readme",
+  "bugs": {
+    "url": "https://github.com/LuChen0820/dsh-whale-ricebowl/issues"
+  },
+  "author": "LuChen0820 (https://github.com/LuChen0820)"
+}

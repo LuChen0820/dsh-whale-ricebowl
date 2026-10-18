@@ -1,0 +1,21 @@
+{
+  "tokensPerBowl": 1000000,
+  "maxBowls": 5,
+  "feedBowls": [
+    1,
+    2,
+    5
+  ],
+  "biteTokens": 1800,
+  "pollRunningMs": 500,
+  "pollIdleMs": 1600,
+  "begDelayMs": 9000,
+  "begIntervalMs": 7000,
+  "begShowMs": 3400,
+  "reportMs": 5200,
+  "mouth": {
+    "x": 0.555,
+    "y": 0.735,
+    "size": 0.08
+  }
+}
