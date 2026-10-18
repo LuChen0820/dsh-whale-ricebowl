@@ -204,6 +204,7 @@
     begCount: 0,
     begDone: false,
     starving: false,
+    starveSid: '',
     starveTimer: null,
     starveLoop: null,
     lastStarve: '',
@@ -593,7 +594,7 @@
   var TANK_KEEP = 30;
 
   function emptyTank(sid) {
-    return { id: String(sid), allocated: 0, consumed: 0, fedAt: 0, updatedAt: Date.now(), turns: 0 };
+    return { id: String(sid), allocated: 0, consumed: 0, fedAt: 0, updatedAt: Date.now(), turns: 0, starvedAt: 0 };
   }
 
   function loadTanks() {
@@ -611,7 +612,8 @@
           consumed: Math.max(0, Number(row.consumed) || 0),
           fedAt: Math.max(0, Number(row.fedAt) || 0),
           updatedAt: Math.max(0, Number(row.updatedAt) || 0),
-          turns: Math.max(0, Number(row.turns) || 0)
+          turns: Math.max(0, Number(row.turns) || 0),
+          starvedAt: Math.max(0, Number(row.starvedAt) || 0)
         };
         if (out.order.indexOf(sid) === -1) out.order.push(sid);
       }
@@ -876,9 +878,32 @@
   function updateBegging() {
     var remain = liveRemain();
     var busy = !!rt.live || rt.eatBusy || rt.eatQueue.length > 0;
-    var should = !!rt.settings.begging && !busy && remain <= 0;
-    if (!should) { stopBegging(); return; }
-    if (rt.starving) { ensureStarveLoop(); return; }
+    var sid = activeSid();
+    // 设置里关掉讨饭：连「饿坏了」一起收起来（再打开时按存档恢复）。
+    if (!rt.settings.begging) { stopBegging(); return; }
+    // 有饭了：饿坏了立刻解除，标签回到饭量。
+    if (remain > 0) { clearStarved(sid); stopBegging(); return; }
+    // 切到别的对话：按那个对话自己的存档决定还灰不灰。
+    if (rt.starving && sid !== '@pending' && rt.starveSid && rt.starveSid !== sid && !starvedOf(sid)) {
+      rt.starving = false;
+      rt.begDone = false;
+      rt.starveSid = '';
+    }
+    // 「饿坏了」是粘住的：一旦进入，没补饭就一直灰着——跑回合、点界面、刷新页面都不会自己复原。
+    if (!rt.starving && starvedOf(sid)) {
+      rt.starving = true;
+      rt.begDone = true;
+      rt.starveSid = sid;
+      if (rt.begTimer) { clearTimeout(rt.begTimer); clearInterval(rt.begTimer); rt.begTimer = null; }
+      rt.begging = false;
+    }
+    if (rt.starving) {
+      markStarving();
+      // 回合进行中保持灰度，但不抢报账气泡；回合结束后再继续有气无力地说话。
+      if (!busy) ensureStarveLoop();
+      return;
+    }
+    if (busy) { stopBegging(); return; }
     if (rt.begDone) { ensureStarveTimer(); return; }
     if (rt.begging) return;
     rt.begging = true;
@@ -901,6 +926,7 @@
     rt.begCount = 0;
     rt.begDone = false;
     rt.starving = false;
+    rt.starveSid = '';
     if (rt.begTimer) { clearTimeout(rt.begTimer); clearInterval(rt.begTimer); rt.begTimer = null; }
     if (rt.starveTimer) { clearTimeout(rt.starveTimer); rt.starveTimer = null; }
     if (rt.starveLoop) { clearInterval(rt.starveLoop); rt.starveLoop = null; }
@@ -911,6 +937,32 @@
     var img = hungerImg();
     if (img) img.classList.remove('dshwr-beg-img', 'dshwr-starve-img');
     if (rt.mounted && !rt.eatBusy && !rt.eatQueue.length) setLabel(liveRemain());
+  }
+
+  /** 这个对话有没有已经进入「饿坏了」的存档（补饭 / 清空饭账才会清掉）。 */
+  function starvedOf(sid) {
+    var tank = tankOf(sid);
+    if (!tank || remainOf(tank) > 0) return false;
+    return Math.max(0, Number(tank.starvedAt) || 0) > 0;
+  }
+
+  function clearStarved(sid) {
+    var tank = tankOf(sid);
+    if (!tank || !tank.starvedAt) return;
+    tank.starvedAt = 0;
+    tank.updatedAt = Date.now();
+    saveTanks();
+  }
+
+  /** 把「饿坏了」的样子画上（灰度 / 耷拉 / 标签）；可重复调用，宿主重绘或类被抹掉后能补回来。 */
+  function markStarving() {
+    if (rt.layer) rt.layer.classList.add('dshwr-starving');
+    var img = hungerImg();
+    if (img) {
+      img.classList.remove('dshwr-beg-img');
+      img.classList.add('dshwr-starve-img');
+    }
+    setLabel(0);
   }
 
   function hungerImg() {
@@ -975,13 +1027,16 @@
     if (rt.starving) return;
     rt.starving = true;
     rt.begDone = true;
-    if (rt.layer) rt.layer.classList.add('dshwr-starving');
-    var img = hungerImg();
-    if (img) {
-      img.classList.remove('dshwr-beg-img');
-      img.classList.add('dshwr-starve-img');
+    // 存档：刷新页面 / 切换对话 / 跑回合都要保持「饿坏了」，直到真的补饭。
+    var sid = activeSid();
+    rt.starveSid = sid;
+    var tank = tankOf(sid);
+    if (tank && !tank.starvedAt) {
+      tank.starvedAt = Date.now();
+      tank.updatedAt = Date.now();
+      saveTanks();
     }
-    setLabel(0);
+    markStarving();
     starvePulse();
     if (rt.starveLoop) clearInterval(rt.starveLoop);
     rt.starveLoop = setInterval(starvePulse, Math.max(8000, Number(rt.config.starveIntervalMs) || 30000));
@@ -1193,6 +1248,8 @@
     rt.layer.classList.toggle('dshwr-running', running);
     rt.layer.classList.toggle('dshwr-rice-low', remain > 0 && fill < 0.18);
     rt.layer.classList.toggle('dshwr-steam-on', fill > 0.15);
+    // 宿主重绘 / 别处动过 img 的类时，饿坏了的灰度在下一轮轮询就补回来。
+    if (rt.starving) markStarving();
   }
 
   function setLabel(remain) {
@@ -1220,6 +1277,7 @@
     var tank = tankOf(sid);
     tank.allocated = Math.max(0, Math.round(Number(tank.allocated) + amount));
     tank.fedAt = Date.now();
+    tank.starvedAt = 0;
     tank.updatedAt = Date.now();
     touchOrder(sid);
     saveTanks();
@@ -1287,7 +1345,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.7</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.8</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);

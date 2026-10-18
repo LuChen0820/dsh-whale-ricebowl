@@ -54,12 +54,15 @@ v0.5.0 的做法：
 * **轮询自适应**：running 时 `pollRunningMs`（500ms）、空闲 `pollIdleMs`（1600ms）；`document.hidden` 时暂停，恢复后靠补演追平。
 * 口数：`bites = clamp(ceil(tokens / biteTokens), 1, 6)`，`biteTokens` 默认 1800。
 
-## 6. 讨饭 / 饿坏了状态机（v0.5.3）
+## 6. 讨饭 / 饿坏了状态机（v0.5.3，v0.5.8 起「饿坏了」粘住）
 
 * 触发：`updateBegging()` 在有饭量 / 正在吃饭 / 回合进行中时停掉；否则（`settings.begging` 开启且剩余 ≤ 0）先等 `begDelayMs`（9s），之后每 `begIntervalMs`（7s）来一次 `begPulse()`。
 * **前 10 次**（`begTimes`）：每次气泡显示 `begShowMs` 并自动消失；同时给宿主 `img` 临时加 `.dshwr-beg-img`（上浮 / 歪头 1.7s）、层上加 `.dshwr-beg`（碗发光 1.5s）、嘴张开「啊——」0.9s。文案从 `lines.beg` 随机取，且不连续重复（`rt.lastBeg`）。
 * 10 次之后：停止气泡，安静等待 `starveDelayMs`（默认 10 分钟），然后 `enterStarving()`：层上加 `.dshwr-starving`、`img` 加 `.dshwr-starve-img`（变灰 + 慢悠悠耷拉晃动）、标签变成「饿坏了…」、气泡换成 `lines.starve` 池、间隔 `starveIntervalMs`（默认 30s）。
 * 加饭 / 重新有饭后 `stopBegging()` 立刻清掉所有定时器、计数和临时类，恢复正常。
+* **「饿坏了」会粘住**（v0.5.8）：`enterStarving()` 把时间写进该对话饭账的 `starvedAt`；`updateBegging()` 只要看到 `rt.starving` 或 `starvedOf(activeSid())` 就持续保持灰度 / 「饿坏了…」标签 / 气泡——跑回合（`rt.live` 忙）、点碗菜单、刷新页面、轮询重绘都不会清掉。只有真的补饭（`remain > 0`）或清空饭账 / 关掉「没饭时讨饭」才恢复。
+* 宿主重绘或别处动了 `img` 的类时，`renderBowl()` 每轮轮询都会调 `markStarving()` 把灰度补回来（最多晚一个轮询间隔，约 1.6s）。
+* 每个对话独立：切到别的对话时按那个对话自己的 `starvedAt` 决定灰不灰；`stopBegging()` 只清内存态，动存档只发生在补饭（`clearStarved`）和清空饭账时。
 * 没饭时**不再播吃饭动作**：`enqueueEat()` 先看视觉剩余，剩余 ≤ 0 就直接跳过演出（本轮消耗照常记账、报账仍显示「吃完啦」）。
 
 ## 7. 宿主数据口径

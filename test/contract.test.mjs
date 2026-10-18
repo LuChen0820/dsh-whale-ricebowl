@@ -57,6 +57,17 @@ test('config is a 1M-per-bowl tank with 5 visible bowls', async () => {
   assert.ok(config.mouth && config.mouth.x > 0 && config.mouth.y > 0);
 });
 
+test('starvation is sticky and persisted per conversation', async () => {
+  const client = await read('assets/client.js');
+  for (const piece of ['starvedAt', 'starvedOf', 'clearStarved', 'markStarving', 'starveSid']) {
+    assert.ok(client.includes(piece), 'client should contain ' + piece);
+  }
+  const update = client.slice(client.indexOf('function updateBegging'), client.indexOf('function stopBegging'));
+  assert.ok(update.includes('if (rt.starving)'), 'updateBegging must keep the starving state');
+  assert.ok(update.includes('starvedOf(sid)'), 'updateBegging must restore starving from the tank');
+  assert.equal(update.includes('var should = '), false, 'old should-flag reset path should be gone');
+});
+
 test('lines are feeding/ begging lines used by the client', async () => {
   const lines = JSON.parse(await read('assets/lines.json'));
   for (const key of ['beg', 'starve', 'feed']) {
