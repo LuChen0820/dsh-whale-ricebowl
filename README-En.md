@@ -28,7 +28,7 @@ Eating close-up (whale art belongs to the host widget): a grin with one little f
 | --- | --- |
 | Host | The DSH whale balance widget `dsh-whale-widget`. This plugin is an add-on, not a replacement. |
 | Gameplay | Each conversation has its own rice pot: click the bowl to load 1 / 2 / 5 bowls (1 bowl = 1,000,000 tokens). Every turn eats real tokens; at turn end a bubble reports "ate X · Y bowls left". At zero it begs automatically. |
-| Visuals | Transparent glass bowl with a solid mound of cooked rice (grain texture on the surface). Main bowl + up to 4 bowl slots show the stock (max 5 bowls on screen; beyond that the ledger keeps counting while the UI stays unchanged). The whale grins (one fang), a wooden spoon scoops, a rice ball flies into its mouth, plus synthesized scoop / clink / chew sounds (WebAudio, no audio files). |
+| Visuals | Transparent glass bowl with a solid mound of cooked rice (grain texture on the surface). Main bowl + up to 4 bowl slots show the stock (max 5 bowls on screen; beyond that the ledger keeps counting while the UI stays unchanged). The whale grins (one fang), a wooden spoon scoops, a rice ball flies into its mouth, plus cuter synthesized scoop / clink / chew sounds (WebAudio, no audio files). |
 | Ledger | Per conversation (DSH session): loaded / eaten / remaining. Switching conversations switches pots; survives page refresh. |
 | Not | Not a pet-raising game, no levels or memory, no auto-estimation, does not read conversation content, no network upload. |
 

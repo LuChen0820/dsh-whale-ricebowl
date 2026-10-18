@@ -884,6 +884,7 @@
       if (rt.begShowTimer) clearTimeout(rt.begShowTimer);
       rt.begShowTimer = setTimeout(function () { if (rt.layer) rt.layer.classList.remove('dshwr-beg'); }, 1500);
     }
+    playSound('beg');
     if (rt.settings.eat) {
       layoutMouth();
       var mouth = rt.els && rt.els.mouth;
@@ -1167,7 +1168,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.0</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.1</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);
@@ -1303,7 +1304,7 @@
     osc.start(t); osc.stop(t + (opts.dur || 0.1) + 0.02);
   }
 
-  /** kind: pour（倒饭）/ scoop（舀饭）/ clink（碰碗）/ chew（咀嚼） */
+  /** kind: pour（倒饭）/ scoop（舀饭）/ clink（碰碗）/ chew（咀嚼）/ beg（讨饭） */
   function playSound(kind) {
     if (rt.settings && rt.settings.sound === false) return;
     if (document.hidden) return;
@@ -1311,22 +1312,44 @@
     if (!ctx) return;
     try {
       if (kind === 'pour') {
-        playNoise(ctx, { type: 'bandpass', freq: 1500, freqEnd: 2600, q: 0.7, dur: 0.3, gain: 0.045, attack: 0.03 });
-        playNoise(ctx, { type: 'highpass', freq: 3200, q: 0.6, dur: 0.22, gain: 0.018, at: 0.04 });
+        // 倒饭：轻轻的沙沙声 + 一点亮晶晶的碎响
+        playNoise(ctx, { type: 'bandpass', freq: 1800, freqEnd: 3000, q: 0.6, dur: 0.28, gain: 0.03, attack: 0.04 });
+        playTone(ctx, { type: 'sine', freq: 1200, freqEnd: 1650, dur: 0.16, gain: 0.012, at: 0.05 });
+        playTone(ctx, { type: 'sine', freq: 1500, freqEnd: 1200, dur: 0.12, gain: 0.01, at: 0.16 });
       } else if (kind === 'scoop') {
-        playNoise(ctx, { type: 'bandpass', freq: 700, freqEnd: 1300, q: 1.1, dur: 0.24, gain: 0.05 });
-        playTone(ctx, { freq: 320, freqEnd: 190, dur: 0.12, gain: 0.018 });
+        // 木勺舀饭：软软的「沙」+ 上扬的小「啵」
+        playNoise(ctx, { type: 'bandpass', freq: 900, freqEnd: 1500, q: 0.8, dur: 0.16, gain: 0.026, attack: 0.02 });
+        playTone(ctx, { type: 'sine', freq: 620, freqEnd: 980, dur: 0.1, gain: 0.02, at: 0.01 });
+        playTone(ctx, { type: 'triangle', freq: 1560, freqEnd: 1860, dur: 0.07, gain: 0.008, at: 0.05 });
       } else if (kind === 'clink') {
-        playTone(ctx, { type: 'triangle', freq: 2200, dur: 0.09, gain: 0.025 });
-        playTone(ctx, { type: 'triangle', freq: 3150, dur: 0.06, gain: 0.014, at: 0.012 });
+        // 勺碰碗：小铃铛「叮」，两颗高音叠一起，余音软软的
+        playTone(ctx, { type: 'sine', freq: 2093, dur: 0.26, gain: 0.016 });
+        playTone(ctx, { type: 'sine', freq: 2637, dur: 0.2, gain: 0.011, at: 0.01 });
+        playTone(ctx, { type: 'triangle', freq: 3520, dur: 0.12, gain: 0.005, at: 0.02 });
       } else if (kind === 'chew') {
-        for (var i = 0; i < 3; i++) {
-          playNoise(ctx, { type: 'lowpass', freq: 560 - i * 70, q: 0.9, dur: 0.085, gain: 0.055, at: i * 0.1, attack: 0.008 });
-        }
-        playTone(ctx, { freq: 150, freqEnd: 92, dur: 0.16, gain: 0.035 });
+        // 咀嚼：软软的两下「嗯嘛」，圆润、偏高，不用低频轰隆声
+        playTone(ctx, { type: 'sine', freq: 640, freqEnd: 430, dur: 0.1, gain: 0.026, attack: 0.012 });
+        playTone(ctx, { type: 'triangle', freq: 1280, freqEnd: 900, dur: 0.07, gain: 0.007, at: 0.004 });
+        playNoise(ctx, { type: 'bandpass', freq: 1400, q: 1.4, dur: 0.05, gain: 0.008, at: 0.01 });
+        playTone(ctx, { type: 'sine', freq: 560, freqEnd: 380, dur: 0.1, gain: 0.02, at: 0.14, attack: 0.012 });
+        playTone(ctx, { type: 'triangle', freq: 1120, freqEnd: 780, dur: 0.06, gain: 0.006, at: 0.145 });
+        playTone(ctx, { type: 'sine', freq: 860, freqEnd: 720, dur: 0.06, gain: 0.006, at: 0.23 });
+      } else if (kind === 'beg') {
+        // 讨饭：软软的一声「呜…」，尾音往下掉
+        playTone(ctx, { type: 'sine', freq: 880, freqEnd: 560, dur: 0.38, gain: 0.015, attack: 0.02 });
+        playTone(ctx, { type: 'triangle', freq: 440, freqEnd: 320, dur: 0.34, gain: 0.006, at: 0.02 });
+        playTone(ctx, { type: 'sine', freq: 980, freqEnd: 640, dur: 0.3, gain: 0.007, at: 0.1 });
       }
     } catch (err) {}
   }
+
+  // 给本地 demo / 调试音效用（只是转发，不参与业务逻辑）
+  try {
+    window.__dshwhaleRiceSound = function (kind) {
+      audioReady();
+      playSound(kind);
+    };
+  } catch (err) {}
 
   // ---------- 吃饭动作 ----------
 

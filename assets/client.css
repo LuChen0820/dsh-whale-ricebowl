@@ -710,7 +710,7 @@
 .dshwr-stack {
   position: absolute;
   left: 50%;
-  bottom: 103%;
+  bottom: 101%;
   transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
@@ -721,11 +721,23 @@
 .dshwr-pip {
   position: relative;
   width: 0.92em;
-  height: 0.64em;
-  border-radius: 0.1em 0.1em 0.52em 0.52em / 0.08em 0.08em 0.64em 0.64em;
-  background: linear-gradient(180deg, rgba(246, 250, 255, 0.95), rgba(206, 224, 255, 0.88) 56%, rgba(158, 186, 244, 0.92));
+  height: 0.66em;
+  border-radius: 0.1em 0.1em 0.54em 0.54em / 0.08em 0.08em 0.66em 0.66em;
+  background: linear-gradient(180deg, rgba(236, 244, 255, 0.98), rgba(190, 212, 250, 0.95) 58%, rgba(146, 178, 240, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0.05em 0.1em rgba(8, 20, 60, 0.3), 0 0 0 0.035em rgba(120, 150, 220, 0.55);
+  box-shadow: 0 0.05em 0.1em rgba(8, 20, 60, 0.32), 0 0 0 0.035em rgba(110, 142, 214, 0.75);
+}
+.dshwr-pip::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 1%;
+  height: 20%;
+  border-radius: 50%;
+  border-top: 0.06em solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 -0.02em 0 rgba(120, 150, 215, 0.55);
+  opacity: 0.9;
 }
 .dshwr-pip::before {
   content: "";

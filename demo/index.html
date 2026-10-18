@@ -5,7 +5,7 @@
 <title>白饭预言家 · demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  html, body { margin: 0; height: 100%; background: radial-gradient(1200px 700px at 70% 20%, #f7f9ff 0%, #e9eef9 55%, #dfe6f5 100%); }
+  html, body { margin: 0; height: 100%; background: radial-gradient(520px 420px at 78% 22%, rgba(255, 214, 232, 0.75), transparent 70%), radial-gradient(560px 460px at 18% 80%, rgba(255, 240, 205, 0.7), transparent 72%), radial-gradient(700px 560px at 55% 10%, rgba(214, 232, 255, 0.85), transparent 75%), linear-gradient(165deg, #fdf5fc 0%, #eef4ff 55%, #e5eefc 100%); }
   .dshwv-root { position: fixed; right: 0; bottom: 0; width: 380px; height: 380px; z-index: 5; }
   .dshwv-img { position: absolute; right: 0; bottom: 0; width: 59.45%; height: 59.45%; display: block; object-fit: contain; object-position: right bottom; -webkit-user-drag: none; }
   .panel { position: fixed; left: 18px; top: 16px; width: 300px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.82); border: 1px solid rgba(140,165,225,0.4); box-shadow: 0 12px 30px rgba(30,50,100,0.12); font: 13px/1.6 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: #27355c; }
@@ -48,6 +48,12 @@
     <button id="btn-eat">吃 2.6K</button>
     <button id="btn-eat2">吃 5.4K</button>
     <button id="btn-end">结束本轮（turn/end）</button>
+  </div>
+  <div class="row">
+    <button data-sound="scoop">试听：舀饭</button>
+    <button data-sound="clink">碰碗</button>
+    <button data-sound="chew">咀嚼</button>
+    <button data-sound="beg">讨饭</button>
   </div>
   <div class="row">
     <button id="btn-run">一键跑完一轮</button>
@@ -109,6 +115,12 @@
     await mock({ turn: state.turn, running: 1, actual: 5400 });
     await wait(1000);
     await mock({ turn: state.turn, running: 0, actual: 5400 });
+  });
+  document.querySelectorAll('[data-sound]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var kind = btn.getAttribute('data-sound');
+      if (window.__dshwhaleRiceSound) window.__dshwhaleRiceSound(kind);
+    });
   });
   document.getElementById('btn-empty').addEventListener('click', function () {
     var t = tank();
