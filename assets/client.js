@@ -42,11 +42,15 @@
   ];
   var GRAIN_FILLS = ['#fffdf6', '#fbf6e9', '#fdf9ef', '#f7f0df', '#fffefb'];
 
-  // 1 碗 = 100 万 token；最多显示 5 碗；装饭菜单默认 1 / 2 / 5 碗。
+  // 1 碗 = 100 万 token；最多显示 5 碗；装饭菜单：小碗 25 万 / 半碗 50 万 / 一碗 100 万。
   var DEFAULT_CONFIG = {
     tokensPerBowl: 1000000,
     maxBowls: 5,
-    feedBowls: [1, 2, 5],
+    feedOptions: [
+      { label: '小碗', tokens: 250000 },
+      { label: '半碗', tokens: 500000 },
+      { label: '一碗', tokens: 1000000 }
+    ],
     biteTokens: 1800,
     pollRunningMs: 500,
     pollIdleMs: 1600,
@@ -218,7 +222,7 @@
     var base = {
       tokensPerBowl: DEFAULT_CONFIG.tokensPerBowl,
       maxBowls: DEFAULT_CONFIG.maxBowls,
-      feedBowls: DEFAULT_CONFIG.feedBowls.slice(),
+      feedOptions: DEFAULT_CONFIG.feedOptions.map(function (o) { return { label: o.label, tokens: o.tokens }; }),
       biteTokens: DEFAULT_CONFIG.biteTokens,
       pollRunningMs: DEFAULT_CONFIG.pollRunningMs,
       pollIdleMs: DEFAULT_CONFIG.pollIdleMs,
@@ -235,13 +239,15 @@
     });
     var maxBowls = Number(cfg.maxBowls);
     if (Number.isFinite(maxBowls) && maxBowls > 0) base.maxBowls = Math.max(1, Math.min(5, Math.round(maxBowls)));
-    if (Array.isArray(cfg.feedBowls) && cfg.feedBowls.length) {
+    if (Array.isArray(cfg.feedOptions) && cfg.feedOptions.length) {
       var feed = [];
-      for (var fi = 0; fi < cfg.feedBowls.length; fi++) {
-        var bowls = Math.round(Number(cfg.feedBowls[fi]));
-        if (Number.isFinite(bowls) && bowls > 0 && feed.indexOf(bowls) === -1) feed.push(bowls);
+      for (var fi = 0; fi < cfg.feedOptions.length; fi++) {
+        var opt = cfg.feedOptions[fi];
+        var optTokens = Math.round(Number(opt && opt.tokens));
+        if (!Number.isFinite(optTokens) || optTokens <= 0) continue;
+        feed.push({ label: String((opt && opt.label) || ''), tokens: optTokens });
       }
-      if (feed.length) base.feedBowls = feed.slice(0, 4);
+      if (feed.length) base.feedOptions = feed.slice(0, 4);
     }
     if (cfg.mouth && typeof cfg.mouth === 'object') {
       var mx = Number(cfg.mouth.x);
@@ -485,7 +491,7 @@
         ev.preventDefault();
         ev.stopPropagation();
         audioReady();
-        feedBowls(Number(tierBtn.getAttribute('data-bowls')) || 1);
+        feedTokens(Number(tierBtn.getAttribute('data-tokens')) || 0);
         return;
       }
       if (target.closest('.dshwr-reset')) {
@@ -673,7 +679,10 @@
     var r = Math.max(0, Number(remain) || 0);
     if (r <= 0) return '没饭了';
     var b = bowlsOf(r);
-    var text = b >= 10 ? String(Math.round(b)) : b.toFixed(1).replace(/\.0$/, '');
+    var text;
+    if (b >= 10) text = String(Math.round(b));
+    else if (b >= 1) text = b.toFixed(1).replace(/\.0$/, '');
+    else text = b.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
     return text + ' 碗';
   }
 
@@ -1098,9 +1107,9 @@
     rt.els.stack.hidden = full <= 0;
   }
 
-  function feedBowls(bowls) {
-    var n = Math.max(1, Math.round(Number(bowls) || 1));
-    var amount = n * tokensPerBowl();
+  function feedTokens(tokens) {
+    var amount = Math.max(0, Math.round(Number(tokens) || 0));
+    if (amount <= 0) return;
     var sid = activeSid();
     var tank = tankOf(sid);
     tank.allocated = Math.max(0, Math.round(Number(tank.allocated) + amount));
@@ -1138,12 +1147,14 @@
     var per = tokensPerBowl();
     var html = '<div class="dshwr-menu-note"><span class="dshwr-unflip">' + esc(remain > 0 ? '剩 ' + bowlText(remain) : '碗是空的') + '</span></div>';
     html += '<div class="dshwr-menu-grid">';
-    var bowls = Array.isArray(rt.config.feedBowls) && rt.config.feedBowls.length ? rt.config.feedBowls : [1, 2, 5];
-    for (var i = 0; i < bowls.length; i++) {
-      var n = Math.max(1, Math.round(Number(bowls[i]) || 1));
-      html += '<button type="button" class="dshwr-tier" data-bowls="' + n + '">'
-        + '<b class="dshwr-unflip">装 ' + n + ' 碗</b>'
-        + '<span class="dshwr-tier-k dshwr-unflip">（' + esc(fmtTokens(n * per)) + '）</span>'
+    var options = Array.isArray(rt.config.feedOptions) && rt.config.feedOptions.length ? rt.config.feedOptions : DEFAULT_CONFIG.feedOptions;
+    for (var i = 0; i < options.length; i++) {
+      var opt = options[i] || {};
+      var amount = Math.max(0, Math.round(Number(opt.tokens) || 0));
+      if (amount <= 0) continue;
+      html += '<button type="button" class="dshwr-tier" data-tokens="' + amount + '">'
+        + '<b class="dshwr-unflip">装' + esc(opt.label || '一碗') + '</b>'
+        + '<span class="dshwr-tier-k dshwr-unflip">（' + esc(fmtTokens(amount)) + '）</span>'
         + '</button>';
     }
     html += '</div>';
@@ -1168,7 +1179,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.1</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.2</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);

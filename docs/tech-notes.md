@@ -23,7 +23,7 @@ DSH 会话事件 ──> lib/state.js（纯函数折叠）──> lib/index.js�
 * 每个对话（`sessionId`）一份：`localStorage['dshwr-tank:v1'] = { v:1, order:[sid...], sessions:{ sid: { allocated, consumed, fedAt, updatedAt, turns } } }`，保留最近 30 个对话。
 * 剩余 = `max(0, allocated - consumed)`；超过 5 碗（`maxBowls`）继续记账但 UI 固定显示 5 碗。
 * 显示：**主碗**显示「当前这一碗」的剩余比例；旁边最多 4 个**碗位**（`.dshwr-pip`）表示满碗库存；标签显示剩余碗数（如 `3 碗`）。
-* 装饭：菜单档位 `feedBowls`（默认 1/2/5 碗）；没绑定对话时装的饭存进 `@pending`，第一轮对话开始时由 `adoptPending()` 倒进该对话的锅。
+* 装饭：菜单档位 `feedOptions`（小碗 25 万 / 半碗 50 万 / 一碗 100 万；1 碗 = 100 万 token）；没绑定对话时装的饭存进 `@pending`，第一轮对话开始时由 `adoptPending()` 倒进该对话的锅。
 * 回合生命周期：`turn/start` → `startTurn()` 建立内存态 `rt.live = { sid, turn, seen, remain }`；轮询看到 `actualTokens` 增长 → `enqueueEat(delta)`；`turn/end` → `finishTurn()` 补演漏掉的口，再 `applyConsume()` 落盘 + 气泡报账。
 * 防重复记账：只在「观察到 running → 结束」时落盘一次；插件启动时如果回合已经结束，不补记历史回合（避免误扣）。
 

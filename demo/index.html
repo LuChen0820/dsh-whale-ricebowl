@@ -39,9 +39,9 @@
   <h1>白饭预言家 · 本地预览</h1>
   <p>模拟宿主「小鲸鱼记账挂件」的 DOM；点右下角饭碗就能装饭。</p>
   <div class="row">
-    <button data-feed="1">装 1 碗（100 万）</button>
-    <button data-feed="2">装 2 碗（200 万）</button>
-    <button data-feed="5">装 5 碗（500 万）</button>
+    <button data-feed="250000">装小碗（25 万）</button>
+    <button data-feed="500000">装半碗（50 万）</button>
+    <button data-feed="1000000">装一碗（100 万）</button>
   </div>
   <div class="row">
     <button class="primary" id="btn-turn">开始一轮（turn/start）</button>
@@ -85,9 +85,9 @@
   document.querySelectorAll('[data-feed]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var t = tank();
-      var n = Number(btn.getAttribute('data-feed')) || 1;
+      var amount = Number(btn.getAttribute('data-feed')) || 0;
       var row = t.sessions['demo-session'];
-      row.allocated += n * 1000000;
+      row.allocated += amount;
       row.fedAt = Date.now();
       save(t);
       location.reload();

@@ -39,7 +39,7 @@ test('v0.5.0 is a feeding mechanic, not the old prediction bet', async () => {
   for (const word of ['预测', '押注', '超了', '省下']) {
     assert.equal(client.includes(word), false, 'old wording should be gone: ' + word);
   }
-  for (const piece of ['feedBowls', 'dshwr-tank:v1', 'enqueueEat', 'pickBegLine', 'dshwr-stack', 'tokensPerBowl']) {
+  for (const piece of ['feedOptions', 'feedTokens', 'dshwr-tank:v1', 'enqueueEat', 'pickBegLine', 'dshwr-stack', 'tokensPerBowl']) {
     assert.ok(client.includes(piece), 'client should contain ' + piece);
   }
 });
@@ -48,8 +48,9 @@ test('config is a 1M-per-bowl tank with 5 visible bowls', async () => {
   const config = JSON.parse(await read('assets/config.json'));
   assert.equal(config.tokensPerBowl, 1000000);
   assert.equal(config.maxBowls, 5);
-  assert.ok(Array.isArray(config.feedBowls) && config.feedBowls.length >= 2);
-  assert.deepEqual(config.feedBowls.slice(0, 3), [1, 2, 5]);
+  assert.ok(Array.isArray(config.feedOptions) && config.feedOptions.length === 3);
+  assert.deepEqual(config.feedOptions.map((o) => o.tokens), [250000, 500000, 1000000]);
+  assert.deepEqual(config.feedOptions.map((o) => o.label), ['小碗', '半碗', '一碗']);
   assert.ok(config.biteTokens > 0);
   assert.ok(config.mouth && config.mouth.x > 0 && config.mouth.y > 0);
 });

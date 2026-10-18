@@ -1,11 +1,6 @@
 {
   "tokensPerBowl": 1000000,
   "maxBowls": 5,
-  "feedBowls": [
-    1,
-    2,
-    5
-  ],
   "biteTokens": 1800,
   "pollRunningMs": 500,
   "pollIdleMs": 1600,
@@ -17,5 +12,19 @@
     "x": 0.555,
     "y": 0.735,
     "size": 0.08
-  }
+  },
+  "feedOptions": [
+    {
+      "label": "小碗",
+      "tokens": 250000
+    },
+    {
+      "label": "半碗",
+      "tokens": 500000
+    },
+    {
+      "label": "一碗",
+      "tokens": 1000000
+    }
+  ]
 }
