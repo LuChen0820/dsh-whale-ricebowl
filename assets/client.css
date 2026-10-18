@@ -815,23 +815,6 @@
   32% { transform: translateY(2.1%) rotate(-1.9deg); }
   68% { transform: translateY(2.6%) rotate(1.7deg); }
 }
-.dshwr-starve-drop {
-  position: absolute;
-  z-index: 9;
-  width: 0.5em;
-  height: 0.7em;
-  border-radius: 0 62% 62% 62%;
-  background: linear-gradient(160deg, #eaf8ff, #8ac9f8 65%, #5fa9ee);
-  box-shadow: 0 0 0.14em rgba(255, 255, 255, 0.95), 0 0.05em 0.14em rgba(40, 90, 160, 0.4);
-  opacity: 0.92;
-  pointer-events: none;
-  animation: dshwr-starve-drop 2.4s ease-in infinite;
-}
-@keyframes dshwr-starve-drop {
-  0% { opacity: 0.92; transform: translateY(0) scale(0.9); }
-  65% { opacity: 0.8; transform: translateY(0.62em) scale(1); }
-  100% { opacity: 0; transform: translateY(1.15em) scale(1); }
-}
 .dshwr-starving .dshwr-bowl-svg {
   opacity: 0.5;
   filter: saturate(0.4);
