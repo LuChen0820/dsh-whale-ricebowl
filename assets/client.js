@@ -42,12 +42,12 @@
   ];
   var GRAIN_FILLS = ['#fffdf6', '#fbf6e9', '#fdf9ef', '#f7f0df', '#fffefb'];
 
-  // 1 碗 = 100 万 token；最多显示 5 碗；装饭菜单：小碗 25 万 / 半碗 50 万 / 一碗 100 万。
+  // 1 碗 = 100 万 token；最多显示 5 碗；装饭菜单：小碗 20 万 / 半碗 50 万 / 一碗 100 万。
   var DEFAULT_CONFIG = {
     tokensPerBowl: 1000000,
     maxBowls: 5,
     feedOptions: [
-      { label: '小碗', tokens: 250000 },
+      { label: '小碗', tokens: 200000 },
       { label: '半碗', tokens: 500000 },
       { label: '一碗', tokens: 1000000 }
     ],
@@ -1255,7 +1255,7 @@
   function setLabel(remain) {
     if (!rt.els || !rt.els.label) return;
     var text = '';
-    if (rt.settings.label !== false) text = remain > 0 ? bowlText(remain) : (rt.starving ? '饿坏了…' : '没饭了');
+    if (rt.settings.label !== false) text = remain > 0 ? bowlText(remain) : (rt.starving ? '饿坏了…' : '碗空了......');
     rt.els.label.textContent = text;
     var box = rt.els.label.parentNode;
     if (box) box.hidden = !text;
@@ -1345,7 +1345,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.8</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.9</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);

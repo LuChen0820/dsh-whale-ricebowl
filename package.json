@@ -1,6 +1,6 @@
 {
   "name": "dsh-whale-ricebowl",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "DSH 小鲸鱼记账挂件附加层：先给大肥鱼装饭（1 碗 = 100 万 token），每轮对话按真实 token 消耗吃掉米饭，吃完自动讨饭；每个对话一口锅。",
   "type": "module",
   "main": "lib/index.js",

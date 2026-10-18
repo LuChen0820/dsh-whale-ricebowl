@@ -49,12 +49,25 @@ test('config is a 1M-per-bowl tank with 5 visible bowls', async () => {
   assert.equal(config.tokensPerBowl, 1000000);
   assert.equal(config.maxBowls, 5);
   assert.ok(Array.isArray(config.feedOptions) && config.feedOptions.length === 3);
-  assert.deepEqual(config.feedOptions.map((o) => o.tokens), [250000, 500000, 1000000]);
+  assert.deepEqual(config.feedOptions.map((o) => o.tokens), [200000, 500000, 1000000]);
   assert.deepEqual(config.feedOptions.map((o) => o.label), ['小碗', '半碗', '一碗']);
   assert.equal(config.begTimes, 10);
   assert.ok(config.starveDelayMs >= 60000);
   assert.ok(config.biteTokens > 0);
   assert.ok(config.mouth && config.mouth.x > 0 && config.mouth.y > 0);
+});
+
+test('feed bubbles are equal width and the empty label reads thoughtfully', async () => {
+  const client = await read('assets/client.js');
+  assert.ok(client.includes("'碗空了......'"), 'empty bowl label should say 碗空了......');
+  const config = JSON.parse(await read('assets/config.json'));
+  assert.deepEqual(config.feedOptions.map((o) => o.tokens), [200000, 500000, 1000000]);
+  const css = await read('assets/client.css');
+  const grid = css.slice(css.indexOf('.dshwr-menu-grid'), css.indexOf('.dshwr-tier'));
+  assert.ok(grid.includes('flex-direction: column'));
+  assert.ok(grid.includes('align-items: stretch'), 'feed options should share one width');
+  const tier = css.slice(css.indexOf('.dshwr-tier {'), css.indexOf('/* 气泡尾巴朝右'));
+  assert.ok(tier.includes('justify-content: center'));
 });
 
 test('starvation is sticky and persisted per conversation', async () => {
