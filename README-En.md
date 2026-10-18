@@ -16,9 +16,9 @@ Eating close-up (whale art belongs to the host widget): a grin with one little f
 | --- | --- |
 | ![menu](docs/screenshot-menu.png) | ![report](docs/screenshot-report.png) |
 
-| Begging when empty | Per-conversation ledger |
-| --- | --- |
-| ![begging](docs/screenshot-beg.png) | ![ledger](docs/screenshot-settings.png) |
+| Begging when empty | Starving after a while | Per-conversation ledger |
+| --- | --- | --- |
+| ![begging](docs/screenshot-beg.png) | ![starving](docs/screenshot-starving.png) | ![ledger](docs/screenshot-settings.png) |
 
 > Screenshots come from the local `npm run demo` preview. The whale art is loaded from the host plugin `dsh-whale-widget` (`DSniang1.png`) for demonstration only; this package bundles no upstream art.
 
@@ -27,7 +27,7 @@ Eating close-up (whale art belongs to the host widget): a grin with one little f
 | | |
 | --- | --- |
 | Host | The DSH whale balance widget `dsh-whale-widget`. This plugin is an add-on, not a replacement. |
-| Gameplay | Each conversation has its own rice pot: click the bowl to load a small bowl (250K tokens) / half bowl (500K) / one bowl (1M). Every turn eats real tokens; at turn end a bubble reports "ate X · Y bowls left". At zero it begs automatically. |
+| Gameplay | Each conversation has its own rice pot: click the bowl to load a small bowl (250K tokens) / half bowl (500K) / one bowl (1M). Every turn eats real tokens; at turn end a bubble reports "ate X · Y bowls left". At zero it begs 10 times, then after 10 quiet minutes turns into a starving whale. |
 | Visuals | Transparent glass bowl with a solid mound of cooked rice (grain texture on the surface). Main bowl + up to 4 bowl slots show the stock (max 5 bowls on screen; beyond that the ledger keeps counting while the UI stays unchanged). The whale grins (one fang), a wooden spoon scoops, a rice ball flies into its mouth, plus cuter synthesized scoop / clink / chew sounds (WebAudio, no audio files). |
 | Ledger | Per conversation (DSH session): loaded / eaten / remaining. Switching conversations switches pots; survives page refresh. |
 | Not | Not a pet-raising game, no levels or memory, no auto-estimation, does not read conversation content, no network upload. |
@@ -53,8 +53,8 @@ Desktop (Electron): the host HTML is served statically, so this plugin also regi
 1. **Load rice**: click the bowl → load a small bowl (250K tokens) / half bowl (500K) / one bowl (1M). You can also load before a conversation — it is parked as "pending rice" and poured into the next conversation's pot when its first turn starts.
 2. **Each turn**: after `turn/start`, real usage makes the whale eat; the rice level drops.
 3. **Turn end**: a bubble reports e.g. "ate 5.4K · 3 bowls left". Short turns are replayed so at least one bite is always shown before the report.
-4. **Bowls**: 1 bowl = 1,000,000 tokens; main bowl + 4 slots = 5 visible bowls max. More than 5 bowls keeps counting but the UI stays the same.
-5. **Begging**: at zero, the whale bobs / tilts, opens its mouth ("ahh—"), and shows a bubble at intervals with random lines (never the same twice in a row). Click the bowl anytime to add rice.
+4. **Bowls**: 1 bowl = 1,000,000 tokens; main bowl + 4 slots = 5 visible bowls max (slots sit to the **left** of the main bowl and hide while the feed menu is open). More than 5 bowls keeps counting but the UI stays the same.
+5. **Begging → starving**: at zero the whale begs 10 times (bobs / tilts, opens its mouth, random bubbles, never the same twice in a row). After that it waits quietly for 10 minutes and then becomes "starving" — desaturated, droopy sway, weak bubbles. Feed it any time and it recovers instantly.
 6. **Settings**: right-click the bowl → toggles (begging / eating animation / sound / rice particles / number label), per-conversation ledger (loaded / eaten / remaining), and "clear ledger".
 7. **Refresh**: the ledger lives in localStorage; assets are served `no-store`.
 
@@ -79,7 +79,7 @@ v0.5.0 uses a **serial chewing queue**:
 
 | File | What |
 | --- | --- |
-| `assets/config.json` | `tokensPerBowl` (default 1,000,000), `maxBowls` (5), `feedOptions` (small bowl 250K / half 500K / one 1M), `biteTokens`, polling / begging / report timings, mouth anchor |
+| `assets/config.json` | `tokensPerBowl` (default 1,000,000), `maxBowls` (5), `feedOptions` (small bowl 250K / half 500K / one 1M), `biteTokens`, `begTimes` (default 10), `starveDelayMs` (10 min), `starveIntervalMs`, polling / report timings, mouth anchor |
 | `assets/lines.json` | line pools (begging / feeding / onboarding) |
 | `lib/state.js` | accounting toggle `COUNT_CACHE_READ` |
 

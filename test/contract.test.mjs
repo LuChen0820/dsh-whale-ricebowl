@@ -39,7 +39,7 @@ test('v0.5.0 is a feeding mechanic, not the old prediction bet', async () => {
   for (const word of ['预测', '押注', '超了', '省下']) {
     assert.equal(client.includes(word), false, 'old wording should be gone: ' + word);
   }
-  for (const piece of ['feedOptions', 'feedTokens', 'dshwr-tank:v1', 'enqueueEat', 'pickBegLine', 'dshwr-stack', 'tokensPerBowl']) {
+  for (const piece of ['feedOptions', 'feedTokens', 'dshwr-tank:v1', 'enqueueEat', 'pickHungerLine', 'begTimes', 'dshwr-starve-img', 'dshwr-stack', 'tokensPerBowl']) {
     assert.ok(client.includes(piece), 'client should contain ' + piece);
   }
 });
@@ -51,13 +51,15 @@ test('config is a 1M-per-bowl tank with 5 visible bowls', async () => {
   assert.ok(Array.isArray(config.feedOptions) && config.feedOptions.length === 3);
   assert.deepEqual(config.feedOptions.map((o) => o.tokens), [250000, 500000, 1000000]);
   assert.deepEqual(config.feedOptions.map((o) => o.label), ['小碗', '半碗', '一碗']);
+  assert.equal(config.begTimes, 10);
+  assert.ok(config.starveDelayMs >= 60000);
   assert.ok(config.biteTokens > 0);
   assert.ok(config.mouth && config.mouth.x > 0 && config.mouth.y > 0);
 });
 
 test('lines are feeding/ begging lines used by the client', async () => {
   const lines = JSON.parse(await read('assets/lines.json'));
-  for (const key of ['beg', 'feed']) {
+  for (const key of ['beg', 'starve', 'feed']) {
     assert.ok(Array.isArray(lines[key]) && lines[key].length > 0, key);
   }
   assert.equal(typeof lines.onboard, 'string');

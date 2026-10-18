@@ -57,6 +57,9 @@
     begDelayMs: 9000,
     begIntervalMs: 7000,
     begShowMs: 3400,
+    begTimes: 10,          // 先讨饭 10 次
+    starveDelayMs: 600000, // 十次讨饭后，再等 10 分钟 →「饿坏了」
+    starveIntervalMs: 30000,
     reportMs: 5200,
     // 鲸鱼嘴在立绘图里的相对位置（0~1），按宿主默认立绘 DSniang1.png 标定：
     // 脸在左下方，嘴落在双眼中间偏下（x 55.5%、y 73.5%），嘴宽 = 立绘宽的 8%。
@@ -64,7 +67,30 @@
   };
 
   var DEFAULT_LINES = {
-    beg: ['饭…饭没了…', '咕噜…碗底都舔干净了。', '大肥鱼饿了，给我装饭嘛。', '这轮还没吃饱…', '喂我一口，什么活都干。'],
+    beg: [
+      '饭饭…饭饭没有啦…',
+      '呜呜…肚子咕噜咕噜叫…',
+      '大肥鱼饿饿，给我装饭饭嘛～',
+      '咕噜咕噜…碗底光光的啦…',
+      '一口…就一口嘛，好不好呀？',
+      '哎呀呀…饭没了哟…',
+      '饿饿…给我添点饭饭啦～',
+      '呜呜呜…要饭饭…',
+      '碗都舔得亮晶晶啦…',
+      '好饿好饿…咕咕叫啦…',
+      '饭饭香香…给我留一口嘛～',
+      '说话都没力气啦…来点饭饭嘛…'
+    ],
+    starve: [
+      '唔…已经饿到不想动啦…',
+      '大肥鱼饿坏了…扁扁的啦…',
+      '呜呜…眼前冒星星啦…',
+      '饿得软趴趴…快给点饭饭嘛…',
+      '咕…咕…肚子叫得没力气啦…',
+      '再不给饭…要变成鱼干啦…',
+      '饿坏啦…饭饭快来…',
+      '有气无力…就等一口饭饭…'
+    ],
     feed: ['装饭啦～', '好耶，有饭吃了。', '这碗先囤着，慢慢吃。', '闻起来好香。'],
     onboard: '点碗装饭：一碗 = 100 万 token；每轮吃完会报账，没饭了它会自己讨饭。'
   };
@@ -177,6 +203,12 @@
     begImgTimer: null,
     begMouthTimer: null,
     lastBeg: '',
+    begCount: 0,
+    begDone: false,
+    starving: false,
+    starveTimer: null,
+    starveLoop: null,
+    lastStarve: '',
     bubbleTimer: null,
     riceTimer: null,
     pourTimer: null,
@@ -229,11 +261,14 @@
       begDelayMs: DEFAULT_CONFIG.begDelayMs,
       begIntervalMs: DEFAULT_CONFIG.begIntervalMs,
       begShowMs: DEFAULT_CONFIG.begShowMs,
+      begTimes: DEFAULT_CONFIG.begTimes,
+      starveDelayMs: DEFAULT_CONFIG.starveDelayMs,
+      starveIntervalMs: DEFAULT_CONFIG.starveIntervalMs,
       reportMs: DEFAULT_CONFIG.reportMs,
       mouth: { x: DEFAULT_CONFIG.mouth.x, y: DEFAULT_CONFIG.mouth.y, size: DEFAULT_CONFIG.mouth.size }
     };
     if (!cfg || typeof cfg !== 'object') return base;
-    ['tokensPerBowl', 'biteTokens', 'pollRunningMs', 'pollIdleMs', 'begDelayMs', 'begIntervalMs', 'begShowMs', 'reportMs'].forEach(function (key) {
+    ['tokensPerBowl', 'biteTokens', 'pollRunningMs', 'pollIdleMs', 'begDelayMs', 'begIntervalMs', 'begShowMs', 'begTimes', 'starveDelayMs', 'starveIntervalMs', 'reportMs'].forEach(function (key) {
       var n = Number(cfg[key]);
       if (Number.isFinite(n) && n > 0) base[key] = n;
     });
@@ -718,7 +753,9 @@
 
   function enqueueEat(tokens, fast) {
     if (!rt.live) return;
-    var total = Math.max(0, Math.round(Number(tokens) || 0));
+    var avail = Math.max(0, Math.round(Number(rt.live.remain) || 0));
+    if (avail <= 0) return; // 碗里没饭了：不再触发吃饭动作
+    var total = Math.min(avail, Math.max(0, Math.round(Number(tokens) || 0)));
     if (total <= 0) return;
     var n = biteCountFor(total, fast);
     var chunk = total / n;
@@ -837,50 +874,64 @@
     }
   }
 
-  // ---------- 讨饭 ----------
+  // ---------- 讨饭 / 饿坏了 ----------
   function updateBegging() {
     var remain = liveRemain();
     var busy = !!rt.live || rt.eatBusy || rt.eatQueue.length > 0;
     var should = !!rt.settings.begging && !busy && remain <= 0;
     if (!should) { stopBegging(); return; }
+    if (rt.starving) { ensureStarveLoop(); return; }
+    if (rt.begDone) { ensureStarveTimer(); return; }
     if (rt.begging) return;
     rt.begging = true;
+    rt.begCount = 0;
     if (rt.begTimer) { clearTimeout(rt.begTimer); clearInterval(rt.begTimer); rt.begTimer = null; }
     rt.begTimer = setTimeout(function () {
       if (!rt.begging) return;
+      if (liveRemain() > 0) { stopBegging(); return; }
       begPulse();
-      rt.begTimer = setInterval(begPulse, Math.max(2400, Number(rt.config.begIntervalMs) || 7000));
+      rt.begTimer = setInterval(function () {
+        if (!rt.begging) return;
+        if (liveRemain() > 0) { stopBegging(); return; }
+        begPulse();
+      }, Math.max(2400, Number(rt.config.begIntervalMs) || 7000));
     }, Math.max(800, Number(rt.config.begDelayMs) || 6000));
   }
 
   function stopBegging() {
     rt.begging = false;
+    rt.begCount = 0;
+    rt.begDone = false;
+    rt.starving = false;
     if (rt.begTimer) { clearTimeout(rt.begTimer); clearInterval(rt.begTimer); rt.begTimer = null; }
+    if (rt.starveTimer) { clearTimeout(rt.starveTimer); rt.starveTimer = null; }
+    if (rt.starveLoop) { clearInterval(rt.starveLoop); rt.starveLoop = null; }
     if (rt.begShowTimer) { clearTimeout(rt.begShowTimer); rt.begShowTimer = null; }
     if (rt.begImgTimer) { clearTimeout(rt.begImgTimer); rt.begImgTimer = null; }
     if (rt.begMouthTimer) { clearTimeout(rt.begMouthTimer); rt.begMouthTimer = null; }
-    if (rt.layer) rt.layer.classList.remove('dshwr-beg');
-    try {
-      var img = rt.root && rt.root.querySelector('.dshwv-img');
-      if (img) img.classList.remove('dshwr-beg-img');
-    } catch (err) {}
+    if (rt.layer) rt.layer.classList.remove('dshwr-beg', 'dshwr-starving');
+    var img = hungerImg();
+    if (img) img.classList.remove('dshwr-beg-img', 'dshwr-starve-img');
   }
 
-  function pickBegLine() {
-    var pool = (rt.lines && Array.isArray(rt.lines.beg) && rt.lines.beg.length) ? rt.lines.beg : DEFAULT_LINES.beg;
-    if (pool.length === 1) return pool[0];
-    var line = pool[Math.floor(Math.random() * pool.length)];
-    if (line === rt.lastBeg) line = pool[(pool.indexOf(line) + 1) % pool.length];
-    rt.lastBeg = line;
+  function hungerImg() {
+    try { return rt.root ? rt.root.querySelector('.dshwv-img') : null; } catch (err) { return null; }
+  }
+
+  function pickHungerLine(pool, lastKey) {
+    var arr = (rt.lines && Array.isArray(pool) && pool.length) ? pool : ['…'];
+    if (arr.length === 1) return arr[0];
+    var line = arr[Math.floor(Math.random() * arr.length)];
+    if (line === rt[lastKey]) line = arr[(arr.indexOf(line) + 1) % arr.length];
+    rt[lastKey] = line;
     return line;
   }
 
   function begPulse() {
-    if (!rt.begging || !rt.mounted) return;
+    if (!rt.mounted) return;
     if (liveRemain() > 0) { stopBegging(); return; }
-    say(pickBegLine(), Number(rt.config.begShowMs) || 3400);
-    var img = null;
-    try { img = rt.root.querySelector('.dshwv-img'); } catch (err) { img = null; }
+    say(pickHungerLine(rt.lines.beg, 'lastBeg'), Number(rt.config.begShowMs) || 3400);
+    var img = hungerImg();
     if (img) {
       img.classList.remove('dshwr-beg-img');
       void img.offsetWidth;
@@ -903,6 +954,58 @@
       }
       if (rt.begMouthTimer) clearTimeout(rt.begMouthTimer);
       rt.begMouthTimer = setTimeout(closeMouth, 900);
+    }
+    rt.begCount += 1;
+    if (rt.begCount >= Math.max(1, Number(rt.config.begTimes) || 10)) {
+      rt.begging = false;
+      if (rt.begTimer) { clearInterval(rt.begTimer); rt.begTimer = null; }
+      rt.begDone = true;
+      ensureStarveTimer();
+    }
+  }
+
+  function ensureStarveTimer() {
+    if (rt.starveTimer || rt.starving) return;
+    rt.starveTimer = setTimeout(enterStarving, Math.max(5000, Number(rt.config.starveDelayMs) || 600000));
+  }
+
+  function enterStarving() {
+    rt.starveTimer = null;
+    if (!rt.settings.begging) return;
+    if (liveRemain() > 0) { stopBegging(); return; }
+    if (rt.starving) return;
+    rt.starving = true;
+    rt.begDone = true;
+    if (rt.layer) rt.layer.classList.add('dshwr-starving');
+    var img = hungerImg();
+    if (img) img.classList.add('dshwr-starve-img');
+    starvePulse();
+    if (rt.starveLoop) clearInterval(rt.starveLoop);
+    rt.starveLoop = setInterval(starvePulse, Math.max(8000, Number(rt.config.starveIntervalMs) || 30000));
+  }
+
+  function ensureStarveLoop() {
+    if (rt.starveLoop) return;
+    starvePulse();
+    rt.starveLoop = setInterval(starvePulse, Math.max(8000, Number(rt.config.starveIntervalMs) || 30000));
+  }
+
+  function starvePulse() {
+    if (!rt.starving) return;
+    if (liveRemain() > 0) { stopBegging(); return; }
+    say(pickHungerLine(rt.lines.starve, 'lastStarve'), Math.max(3000, Number(rt.config.begShowMs) || 3400) + 1200);
+    var img = hungerImg();
+    if (img) img.classList.add('dshwr-starve-img');
+    if (rt.settings.eat) {
+      layoutMouth();
+      var mouth = rt.els && rt.els.mouth;
+      if (mouth) {
+        mouth.classList.remove('dshwr-mouth-open');
+        mouth.classList.remove('dshwr-mouth-chomp');
+        mouth.classList.add('dshwr-mouth-soft');
+      }
+      if (rt.begMouthTimer) clearTimeout(rt.begMouthTimer);
+      rt.begMouthTimer = setTimeout(closeMouth, 1200);
     }
   }
 
@@ -1133,12 +1236,14 @@
     rebuildMenu();
     rt.els.menu.hidden = false;
     rt.menuOpen = true;
+    if (rt.layer) rt.layer.classList.add('dshwr-menu-open');
   }
 
   function closeMenu() {
     if (!rt.els) return;
     rt.els.menu.hidden = true;
     rt.menuOpen = false;
+    if (rt.layer) rt.layer.classList.remove('dshwr-menu-open');
   }
 
   function rebuildMenu() {
@@ -1179,7 +1284,7 @@
     if (!rt.els) return;
     var remaining = liveRemain();
     var tank = tankOf(activeSid());
-    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.2</small></div>';
+    var html = '<div class="dshwr-set-title"><span class="dshwr-unflip">白饭预言家</span><small>v0.5.3</small></div>';
     html += setRow('begging', '没饭时讨饭', rt.settings.begging);
     html += setRow('eat', '吃饭动作（嘴 / 嚼）', rt.settings.eat);
     html += setRow('sound', '吃饭音效', rt.settings.sound);

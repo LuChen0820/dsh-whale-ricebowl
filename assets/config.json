@@ -26,5 +26,8 @@
       "label": "一碗",
       "tokens": 1000000
     }
-  ]
+  ],
+  "begTimes": 10,
+  "starveDelayMs": 600000,
+  "starveIntervalMs": 30000
 }

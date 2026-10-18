@@ -22,7 +22,7 @@ DSH 会话事件 ──> lib/state.js（纯函数折叠）──> lib/index.js�
 * 单位：`1 碗 = 1,000,000 token`（`config.tokensPerBowl`）。
 * 每个对话（`sessionId`）一份：`localStorage['dshwr-tank:v1'] = { v:1, order:[sid...], sessions:{ sid: { allocated, consumed, fedAt, updatedAt, turns } } }`，保留最近 30 个对话。
 * 剩余 = `max(0, allocated - consumed)`；超过 5 碗（`maxBowls`）继续记账但 UI 固定显示 5 碗。
-* 显示：**主碗**显示「当前这一碗」的剩余比例；旁边最多 4 个**碗位**（`.dshwr-pip`）表示满碗库存；标签显示剩余碗数（如 `3 碗`）。
+* 显示：**主碗**显示「当前这一碗」的剩余比例；**主碗左侧**最多 4 个**碗位**（`.dshwr-pip`）表示满碗库存，向左延伸（打开装饭菜单时隐藏，避免和菜单气泡重叠）；标签显示剩余碗数（如 `3 碗`）。
 * 装饭：菜单档位 `feedOptions`（小碗 25 万 / 半碗 50 万 / 一碗 100 万；1 碗 = 100 万 token）；没绑定对话时装的饭存进 `@pending`，第一轮对话开始时由 `adoptPending()` 倒进该对话的锅。
 * 回合生命周期：`turn/start` → `startTurn()` 建立内存态 `rt.live = { sid, turn, seen, remain }`；轮询看到 `actualTokens` 增长 → `enqueueEat(delta)`；`turn/end` → `finishTurn()` 补演漏掉的口，再 `applyConsume()` 落盘 + 气泡报账。
 * 防重复记账：只在「观察到 running → 结束」时落盘一次；插件启动时如果回合已经结束，不补记历史回合（避免误扣）。
@@ -54,12 +54,13 @@ v0.5.0 的做法：
 * **轮询自适应**：running 时 `pollRunningMs`（500ms）、空闲 `pollIdleMs`（1600ms）；`document.hidden` 时暂停，恢复后靠补演追平。
 * 口数：`bites = clamp(ceil(tokens / biteTokens), 1, 6)`，`biteTokens` 默认 1800。
 
-## 6. 讨饭状态机
+## 6. 讨饭 / 饿坏了状态机（v0.5.3）
 
 * 触发：`updateBegging()` 在有饭量 / 正在吃饭 / 回合进行中时停掉；否则（`settings.begging` 开启且剩余 ≤ 0）先等 `begDelayMs`（9s），之后每 `begIntervalMs`（7s）来一次 `begPulse()`。
-* 每次 `begPulse()`：气泡显示 `begShowMs`（3.4s）并自动消失；同时给宿主 `img` 临时加 `.dshwr-beg-img`（上浮 + 歪头 1.7s）、层上加 `.dshwr-beg`（碗发光 1.5s）、嘴张开「啊——」0.9s。
-* 文案：`pickBegLine()` 随机取 `lines.beg`，且与上一次的 `rt.lastBeg` 不同（池子只有 1 条时除外）。
-* 加饭 / 重新有饭后立即 `stopBegging()`，清掉所有定时器和临时类。
+* **前 10 次**（`begTimes`）：每次气泡显示 `begShowMs` 并自动消失；同时给宿主 `img` 临时加 `.dshwr-beg-img`（上浮 / 歪头 1.7s）、层上加 `.dshwr-beg`（碗发光 1.5s）、嘴张开「啊——」0.9s。文案从 `lines.beg` 随机取，且不连续重复（`rt.lastBeg`）。
+* 10 次之后：停止气泡，安静等待 `starveDelayMs`（默认 10 分钟），然后 `enterStarving()`：层上加 `.dshwr-starving`、`img` 加 `.dshwr-starve-img`（灰一点 + 慢悠悠耷拉晃动）、气泡换成 `lines.starve` 池、间隔 `starveIntervalMs`（默认 30s）。
+* 加饭 / 重新有饭后 `stopBegging()` 立刻清掉所有定时器、计数和临时类，恢复正常。
+* 没饭时**不再播吃饭动作**：`enqueueEat()` 先看视觉剩余，剩余 ≤ 0 就直接跳过演出（本轮消耗照常记账、报账仍显示「吃完啦」）。
 
 ## 7. 宿主数据口径
 
@@ -86,6 +87,7 @@ v0.5.0 的做法：
 
 * 默认 100 万 token 一碗：普通一轮只占 0.5%，视觉变化小；`tokensPerBowl` 可调。
 * 嘴位只适配宿主默认立绘；换肤需要改 config。
+* 「饿坏了」只做立绘变灰 + 耷拉晃动，没有额外眼泪 / 星星特效（要加再说）。
 * 多会话跟随「最近有事件的会话」，不做多会话聚合显示。
 * 宿主 DOM 结构变化可能导致错位；找不到锚点时静默隐藏。
 * 无 CI；发布前靠 `npm test` + demo / 真机手动冒烟。

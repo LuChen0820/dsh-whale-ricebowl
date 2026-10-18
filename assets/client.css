@@ -709,14 +709,18 @@
 /* ---------- v0.5.0：多碗碗位 / 装饭提示 / 饭账 / 讨饭立绘 ---------- */
 .dshwr-stack {
   position: absolute;
-  left: 50%;
-  bottom: 101%;
-  transform: translateX(-50%);
+  left: auto;
+  right: 101%;
+  bottom: 40%;
+  transform: none;
   display: flex;
+  flex-direction: row;
   align-items: flex-end;
   gap: 0.16em;
   pointer-events: none;
+  transition: opacity 0.16s ease;
 }
+.dshwr-menu-open .dshwr-stack { opacity: 0; }
 .dshwr-stack[hidden] { display: none !important; }
 .dshwr-pip {
   position: relative;
@@ -797,4 +801,24 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .dshwr-beg-img { animation: none; }
+}
+
+
+/* ---------- v0.5.3：饿坏了 ---------- */
+.dshwr-starve-img {
+  filter: saturate(0.5) brightness(0.96);
+  animation: dshwr-starve-sway 4.6s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+@keyframes dshwr-starve-sway {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(1%) rotate(-1.1deg); }
+  70% { transform: translateY(1.4%) rotate(1deg); }
+}
+.dshwr-starving .dshwr-bowl-svg {
+  opacity: 0.6;
+  filter: saturate(0.55);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dshwr-starve-img { animation: none; }
 }
